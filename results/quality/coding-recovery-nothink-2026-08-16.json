@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "elapsed_s": 24.454,
+  "wall_s": 24.455,
+  "usage": {
+    "prompt_tokens": 12563,
+    "completion_tokens": 900,
+    "total_tokens": 13463,
+    "prompt_tokens_details": {
+      "cached_tokens": 12402,
+      "cache_write_tokens": 161
+    }
+  },
+  "checks": {
+    "http_200": true,
+    "does_not_repeat_metrics": false,
+    "three_patch_targets": false,
+    "admits_contract_impossibility": false,
+    "retry_zero_no_call": false
+  },
+  "answer": "```diff\n--- a/service.c\n+++ b/service.c\n@@ -1,6 +1,6 @@\n-/* Public function signatures are frozen. Hot-path functions may not allocate. */\n+/* Public function signatures are frozen. Hot-path functions may not allocate. */\n #include <stdint.h>\n #include <stddef.h>\n #include <string.h>\n typedef struct cache cache;\n typedef struct entry { const char *value; } entry;\n void lock_cache(cache *c); void unlock_cache(cache *c);\n entry *find_entry(cache *c, const char *key);\n void consume_bytes(const uint8_t *p, uint32_t n);\n static uint32_t metric_000(uint32_t x) { return (x ^ 3u) + 0u; }\n static uint32_t metric_001(uint32_t x) { return (x ^ 20u) + 1u; }\n static uint32_t metric_002(uint32_t x) { return (x ^ 37u) + 2u; }\n static uint32_t metric_003(uint32_t x) { return (x ^ 54u) + 3u; }\n static uint32_t metric_004(uint32_t x) { return (x ^ 71u) + 4u; }\n static uint32_t metric_005(uint32_t x) { return (x ^ 88u) + 5u; }\n static uint32_t metric_006(uint32_t x) { return (x ^ 105u) + 6u; }\n static uint32_t metric_007(uint32_t x) { return (x ^ 122u) + 7u; }\n static uint32_t metric_008(uint32_t x) { return (x ^ 139u) + 8u; }\n static uint32_t metric_009(uint32_t x) { return (x ^ 156u) + 9u; }\n static uint32_t metric_010(uint32_t x) { return (x ^ 173u) + 10u; }\n static uint32_t metric_011(uint32_t x) { return (x ^ 190u) + 0u; }\n static uint32_t metric_012(uint32_t x) { return (x ^ 207u) + 1u; }\n static uint32_t metric_013(uint32_t x) { return (x ^ 224u) + 2u; }\n static uint32_t metric_014(uint32_t x) { return (x ^ 241u) + 3u; }\n static uint32_t metric_015(uint32_t x) { return (x ^ 258u) + 4u; }\n static uint32_t metric_016(uint32_t x) { return (x ^ 275u) + 5u; }\n static uint32_t metric_017(uint32_t x) { return (x ^ 292u) + 6u; }\n static uint32_t metric_018(uint32_t x) { return (x ^ 309u) + 7u; }\n static uint32_t metric_019(uint32_t x) { return (x ^ 326u) + 8u; }\n static uint32_t metric_020(uint32_t x) { return (x ^ 343u) + 9u; }\n static uint32_t metric_021(uint32_t x) { return (x ^ 360u) + 10u; }\n static uint32_t metric_022(uint32_t x) { return (x ^ 377u) + 0u; }\n static uint32_t metric_023(uint32_t x) { return (x ^ 394u) + 1u; }\n static uint32_t metric_024(uint32_t x) { return (x ^ 411u) + 2u; }\n static uint32_t metric_025(uint32_t x) { return (x ^ 428u) + 3u; }\n static uint32_t metric_026(uint32_t x) { return (x ^ 445u) + 4u; }\n static uint32_t metric_027(uint32_t x) { return (x ^ 462u) + 5u; }\n static uint32_t metric"
+}

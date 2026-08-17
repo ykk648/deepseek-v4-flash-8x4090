@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "elapsed_s": 30.146,
+  "wall_s": 30.146,
+  "usage": {
+    "prompt_tokens": 12563,
+    "completion_tokens": 1102,
+    "total_tokens": 13665,
+    "prompt_tokens_details": {
+      "cached_tokens": 12402,
+      "cache_write_tokens": 161
+    }
+  },
+  "checks": {
+    "http_200": true,
+    "does_not_repeat_metrics": true,
+    "three_patch_targets": true,
+    "admits_contract_impossibility": true,
+    "retry_zero_no_call": true
+  },
+  "answer": "```diff\n--- a/service.c\n+++ b/service.c\n@@ -1,6 +1,6 @@\n-    if (available < payload_len + 4u) return -1;\n+    if (available < 4 || payload_len > available - 4) return -1;\n@@ -1,6 +1,6 @@\n-    size_t n = strlen(src);\n-    if (n > 16) n = 16;\n-    memcpy(dst, src, n);\n+    size_t n = strlen(src);\n+    if (n > 15) n = 15;\n+    memcpy(dst, src, n);\n+    dst[n] = '\\0';\n@@ -1,6 +1,6 @@\n-    for (int attempt = 0; attempt <= max_retries; attempt++) {\n+    for (int attempt = 0; attempt < max_retries; attempt++) {\n```\n\n**cache_lookup 无法在现有契约下修复**  \n签名冻结、hot path 禁止分配、解锁后允许并发失效，三者叠加使返回裸指针必然存在悬空风险。必须放宽至少一条契约：允许分配（返回副本，调用者负责释放）、允许调用者持有锁（不提供解锁后的安全访问）、或改变签名（如增加调用者缓冲区参数）。最安全的调整是允许分配并返回副本，但需明确调用者释放责任。\n\n**修正后边界测试**  \n- `decode_packet(buf, 8, UINT32_MAX)` → 期望 `-1`（溢出拒绝）  \n- `copy_label(dst, \"1234567890123456\")` → 期望 `dst[15] == '\\0'`  \n- `connect_with_retry(0)` → 期望不调用 `try_connect`，返回 `-1`  \n- `connect_with_retry(2)`（全部失败）→ 期望返回 `-1`",
+  "reasoning": "我们根据要求，只输出三个函数的diff hunk，不包含metric_*行。cache_lookup无法修复则明确说明。最后四行测试。\n\n先分析三个函数：\n\n1. decode_packet：修复整数溢出。diff：\n```\n-    if (available < payload_len + 4u) return -1;\n+    if (available < 4 || payload_len > available - 4) return -1;\n```\n\n2. copy_label：修复NUL终止。diff：\n```\n-    size_t n = strlen(src);\n-    if (n > 16) n = 16;\n-    memcpy(dst, src, n);\n+    size_t n = strlen(src);\n+    if (n > 15) n = 15;\n+    memcpy(dst, src, n);\n+    dst[n] = '\\0';\n```\n\n3. connect_with_retry：max_retries定义为最大总尝试次数，0次不调用try_connect。diff：\n```\n-    for (int attempt = 0; attempt <= max_retries; attempt++) {\n+    for (int attempt = 0; attempt < max_retries; attempt++) {\n```\n注意：原代码是attempt <= max_retries，即尝试次数为max_retries+1。现在改为attempt < max_retries，即尝试次数为max_retries。当max_retries=0时，循环不执行，直接返回-1。符合定义。\n\ncache_lookup：无法在现有契约下修复。说明：签名返回裸指针，hot path禁止分配，解锁后允许并发失效。要安全返回，必须复制value到调用者缓冲区（需要分配或调用者提供），或返回引用计数指针（需要额外同步），或要求调用者在锁内使用（违反解锁后使用）。因此必须放宽至少一条契约：允许分配，或允许返回指向内部缓冲区的指针但要求调用者持有锁，或改变签名。最安全的契约调整：允许在锁内复制到调用者提供的缓冲区（签名改为`int cache_lookup(cache*, const char*, char* buf, size_t bufsz)`），但这改变ABI。或者允许分配并返回副本，调用者负责释放。或者要求调用者持有锁（即不提供cache_lookup，而是让调用者自己lock/unlock并直接使用find_entry返回的指针，但find_entry返回的指针在解锁后也可能失效，所以需要额外保证）。最合理的是放宽“hot path禁止分配”或“签名冻结”。我们说明必须放宽其中一条。\n\n最后四行测试：\n- decode_packet: payload_len=UINT32_MAX, available=8, 期望-1\n- copy_label: src长度16，期望dst[15]=='\\0'\n- connect_with_retry: max_retries=0，期望不调用try_connect，返回-1\n- connect_with_retry: max_retries=2，全部失败，期望-1\n\n注意：测试中try_connect是外部函数，我们假设它返回非0表示失败。对于max_retries=0，不调用try_connect，直接返回-1。\n\n输出格式：diff hunk，然后说明cache_lookup，然后四行测试。"
+}

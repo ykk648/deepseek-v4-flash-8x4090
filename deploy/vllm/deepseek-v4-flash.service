@@ -1,0 +1,18 @@
+[Unit]
+Description=DeepSeek V4 Flash 0731 vLLM service
+After=default.target
+
+[Service]
+Type=simple
+# This template assumes the repository is cloned directly under $HOME.
+WorkingDirectory=%h/deepseek-v4-flash-8x4090/deploy/vllm
+ExecStart=%h/deepseek-v4-flash-8x4090/deploy/vllm/serve.sh
+Restart=no
+TimeoutStopSec=30
+KillMode=mixed
+StandardOutput=append:%h/deepseek-v4-flash-8x4090/deploy/vllm/server.log
+StandardError=append:%h/deepseek-v4-flash-8x4090/deploy/vllm/server.log
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target
